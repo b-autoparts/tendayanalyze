@@ -54,7 +54,7 @@ def processLine(line):
   # info = [item for sublist in zip(dates, values) for item in sublist]
   l = ''
   for x,y in zip(preDates, preValues): l = l + str(x) + "/" + str(y) + ", "
-  returnInfo = [part] + [l] + values + otherInfo
+  returnInfo = [part] + [plant] + [l] + values + otherInfo
   return returnInfo, dates
 
 def processFile(f, name):
@@ -103,6 +103,7 @@ def sumFile(DATA):
     if partName in PART_DICT:
       oldData = PART_DICT[partName]
       newData = [partName] + [x + y for x, y in zip(datum[1:], oldData[1:])]
+      newData[1] = ''.join(list(set(list(newData[1]))))
       PART_DICT[datum[0]] = newData
     else:
       PART_DICT[datum[0]] = datum
