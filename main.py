@@ -17,7 +17,8 @@ def processLine(line):
   meta, data = line.split()
   meta = meta.split('|')
   data = data.split('|')[1:-1]
-  part = meta[4]
+  plant = meta[2]
+  part = filterPart(meta[4], plant)
   flag_1 = False # keep iterating until find first non-0 value
   flag_1a = False # keep iterating until the third row
   flag_2 = True # keep iterating until month data ends
@@ -82,17 +83,31 @@ def processFile(f, name):
         f_data.append(data)
       if header[0] == 'PLANT D':
         d_data.append(data)
-    main_data = d_data + f_data
+    main_data = [headerD] + sumFile(d_data) + [headerF] + sumFile(f_data)
 
   else:
-    main_data.append(header)
     main_data.append(data)
     while line:
       line = f.readline()
       if EOF in line: break
       data, _ = processLine(line)
       main_data.append(data)
+    main_data = [header] + sumFile(main_data)
   return main_data
+
+def sumFile(DATA):
+  PART_DICT = {}
+  for datum in DATA:
+    partName = datum[0]
+    if 'PLANT ' in partName: continue
+    if partName in PART_DICT:
+      oldData = PART_DICT[partName]
+      newData = [partName] + [x + y for x, y in zip(datum[1:], oldData[1:])]
+      PART_DICT[datum[0]] = newData
+    else:
+      PART_DICT[datum[0]] = datum
+  
+  return list(PART_DICT.values()) 
 
 def filterPart(part, plant):
   if (plant == 'G' and part.endswith('G')):
@@ -100,8 +115,8 @@ def filterPart(part, plant):
   else:
     return part
 
-# FILE_NAMES = ['BDB097','DDB097','GDB097','HDB097']
-FILE_NAMES = ['BDB097','DDB097']
+FILE_NAMES = ['BDB097','DDB097','GDB097','HDB097']
+# FILE_NAMES = ['BDB097','DDB097']
 files = filter(lambda x: not x.endswith('.py'), os.listdir('./'))
 # assert(len(files) == 5)
 # for name in files:
@@ -109,24 +124,13 @@ files = filter(lambda x: not x.endswith('.py'), os.listdir('./'))
 BIG_DATA = []
 for NAME in FILE_NAMES:
   with open(NAME) as f:
-    BIG_DATA += processFile(f, NAME)
+    BIG_DATA +=  processFile(f, NAME)
 
 with open('DATA.csv', 'w', newline='') as f:
   writer = csv.writer(f)
   writer.writerows(BIG_DATA)
 
-PART_DICT = {}
-for datum in BIG_DATA:
-  partName = datum[0]
-  if 'PLANT ' in partName: continue
-  if partName in PART_DICT:
-    oldData = PART_DICT[partName]
-    newData = [partName] + [x + y for x, y in zip(datum[1:], oldData[1:])]
-    PART_DICT[datum[0]] = newData
-  else:
-    PART_DICT[datum[0]] = datum
-
-SUM_DATA = list(PART_DICT.values()) 
+SUM_DATA = sumFile(BIG_DATA) 
 
 with open('SUM-TENDAY.csv', 'w', newline='') as g:
   writer = csv.writer(g)
