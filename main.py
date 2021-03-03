@@ -162,12 +162,12 @@ with open('SUM-TENDAY.csv', 'w', newline='') as g:
   writer = csv.writer(g)
   writer.writerows(NEW_SUM_DATA)
 
-FORCAST_DATA = [[a[0]] + [sum(a[-9:-6])] + [sum(a[-6:-3])] + a[-3:] for a in SUM_DATA]
+FORECAST_DATA = [['Part NO']] + [[a[0]] + [sum(a[-9:-6])] + [sum(a[-6:-3])] + a[-3:] for a in SUM_DATA]
 
 
-with open('FORCAST.csv', 'w', newline='') as h:
+with open('FORECAST.csv', 'w', newline='') as h:
   writer = csv.writer(h)
-  writer.writerows(FORCAST_DATA)
+  writer.writerows(FORECAST_DATA)
     
 
 
